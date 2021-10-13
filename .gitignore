@@ -1,0 +1,12 @@
+#Ignore pycache
+**/__pycache__
+
+
+#Ignore config files
+*.session-journal
+*.session
+*.cfg
+
+
+#Ignore old version bot
+/old_bot
