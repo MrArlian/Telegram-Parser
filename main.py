@@ -3,14 +3,14 @@ from aiogram.utils.executor import start_polling
 from aiogram.dispatcher import Dispatcher
 from aiogram import Bot
 
+from aiogram.types import Message, CallbackQuery, ChatType, ParseMode
 from aiogram.dispatcher.filters import CommandStart, ChatTypeFilter
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
-from aiogram.types import Message, ChatType, ParseMode
 
 from configobj import ConfigObj
 
+from telegram_parser import get_channel, SendMessage
 from state.state_class import user_state
-from telegram_parser import get_channel
 
 from keyboard import *
 from text import *
@@ -62,6 +62,8 @@ async def lobby(message: Message, state: FSMContext):
         compressing=False
     )
 
+    control = db.get('users', 'control', {'user_id': user_id})[0]
+
 
     if text == '✅ создать пару каналов ✅':
         await message.answer(waiting_text, reply_markup=remove_keyboard)
@@ -81,6 +83,20 @@ async def lobby(message: Message, state: FSMContext):
     elif text == '📋 время работы':
         await message.answer(input_work_time_text, reply_markup=cancal_keyboard)
         await user_state.input_work_time.set()
+
+    elif text == '📝 контроль сообщений' and control is True:
+        await message.answer(control_message_on, reply_markup=control_off)
+
+    elif text == '📝 контроль сообщений' and control is False:
+        await message.answer(control_message_off, reply_markup=control_on)
+
+    elif text == '✅ включить ✅':
+        await message.answer(control_on_text, reply_markup=start_keyboard)
+        db.update('users', {'control': True}, {'user_id': user_id})
+
+    elif text == '❌ выключить ❌':
+        await message.answer(control_off_text, reply_markup=start_keyboard)
+        db.update('users', {'control': False}, {'user_id': user_id})
 
     elif text == '❕ старт слова':
         await message.answer(input_words, PARSE_MODE, reply_markup=whitelist_words_keyboard)
@@ -104,7 +120,6 @@ async def lobby(message: Message, state: FSMContext):
 
         _buttons.reverse()
 
-
         if channels:
             markup = ReplyKeyboardMarkup(resize_keyboard=True, row_width=1)
             markup.add(KeyboardButton('❗️ Отмена ❗️'))
@@ -119,6 +134,34 @@ async def lobby(message: Message, state: FSMContext):
         else:
             await message.answer(empty_here_text)
 
+    elif text == 'главное меню':
+        await message.answer(back, reply_markup=start_keyboard)
+
+
+@dispatcher.callback_query_handler(ChatTypeFilter(CHAT_PRIVATE))
+async def inline(callback: CallbackQuery):
+
+    command, object_id = callback.data.split('-')
+    user_id = callback.from_user.id
+
+    info_message = db.get('waiting', ['chat_id', 'payload'], {'id': object_id})
+    chat_id, payload = info_message
+
+    db.delete('waiting', {'id': object_id, 'user_id': user_id})
+
+
+    try:
+        await callback.message.delete()
+    except Exception:
+        pass
+
+
+    if command == 'confirm':
+        await SendMessage(chat_id, payload)
+        await callback.answer(action_confirmed)
+
+    elif command == 'reject':
+        await callback.answer(action_rejected)
 
 
 if __name__ == '__main__':

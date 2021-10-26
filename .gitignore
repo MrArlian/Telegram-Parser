@@ -6,7 +6,3 @@
 *.session-journal
 *.session
 *.cfg
-
-
-#Ignore old version bot
-/old_bot

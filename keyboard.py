@@ -16,7 +16,8 @@ start_keyboard = ReplyKeyboardMarkup(
             KeyboardButton('❗️ Стоп слова')
         ],
         [
-            KeyboardButton('📋 Время работы')
+            KeyboardButton('📋 Время работы'),
+            KeyboardButton('📝 Контроль сообщений')
         ],
         [
             KeyboardButton('❌ Удалить ПАРУ каналов ❌')
@@ -44,6 +45,30 @@ blacklist_words_keyboard = ReplyKeyboardMarkup(
         ],
         [
             KeyboardButton('❌ Очистить список Стоп слов ❌')
+        ]
+    ]
+)
+
+control_on = ReplyKeyboardMarkup(
+    resize_keyboard=True,
+    keyboard=[
+        [
+            KeyboardButton('✅ Включить ✅')
+        ],
+        [
+            KeyboardButton('Главное меню')
+        ]
+    ]
+)
+
+control_off = ReplyKeyboardMarkup(
+    resize_keyboard=True,
+    keyboard=[
+        [
+            KeyboardButton('❌ Выключить ❌'),
+        ],
+        [
+            KeyboardButton('Главное меню')
         ]
     ]
 )

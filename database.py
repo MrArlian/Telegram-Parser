@@ -38,7 +38,7 @@ def add(table: str, data: dict, conflict: str = None) -> None:
     commit()
 
 
-def update(table: str, data: dict, condition: dict = None):
+def update(table: str, data: dict, condition: dict = None) -> None:
     assert table and data, 'Table name and data cannot be empty!'
 
     obj, sql = [], ''
@@ -72,9 +72,9 @@ def update(table: str, data: dict, condition: dict = None):
 
 
 def get(
-    table: str, 
-    objects: Union[str, List[str]], 
-    condition: dict = None, 
+    table: str,
+    objects: Union[str, List[str]],
+    condition: dict = None,
     compressing: bool = True
     ) -> list:
 
