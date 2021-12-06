@@ -9,9 +9,8 @@ from aiogram.contrib.fsm_storage.memory import MemoryStorage
 
 from configobj import ConfigObj
 
-from telegram_parser import get_channel, SendMessage
+from modules import get_channels, SendMessage
 from state.state_class import user_state
-
 from keyboard import *
 from text import *
 
@@ -68,7 +67,7 @@ async def lobby(message: Message, state: FSMContext):
     if text == '✅ создать пару каналов ✅':
         await message.answer(waiting_text, reply_markup=remove_keyboard)
 
-        channels_input, channels_output = await get_channel()
+        channels_input, channels_output = await get_channels()
         channels_name = [info[1] for info in channels_input]
 
         markup = ReplyKeyboardMarkup(resize_keyboard=True, row_width=1)
@@ -142,13 +141,15 @@ async def lobby(message: Message, state: FSMContext):
 async def inline(callback: CallbackQuery):
 
     command, object_id = callback.data.split('-')
-    user_id = callback.from_user.id
 
     info_message = db.get('waiting', ['chat_id', 'payload'], {'id': object_id})
     chat_id, payload = info_message
 
-    db.delete('waiting', {'id': object_id, 'user_id': user_id})
+    object_type = payload.get('type')
+    content = payload.get('items')
+    text = payload.get('text')
 
+    db.delete('waiting', {'id': object_id})
 
     try:
         await callback.message.delete()
@@ -157,7 +158,7 @@ async def inline(callback: CallbackQuery):
 
 
     if command == 'confirm':
-        await SendMessage(chat_id, payload)
+        await SendMessage(chat_id, text, content, object_type)
         await callback.answer(action_confirmed)
 
     elif command == 'reject':

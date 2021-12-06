@@ -1,9 +1,13 @@
 from telethon.events.common import EventCommon
+from telethon.utils import get_peer_id
 
 from datetime import datetime
 from pytz import timezone
 
 import database as db
+
+
+TZ = timezone('Europe/Simferopol')
 
 
 def get_channels_id() -> list:
@@ -12,13 +16,12 @@ def get_channels_id() -> list:
 
 def check_time(event: EventCommon) -> bool:
 
-    chat_id = -event.chat_id - 1000000000000
+    chat_id = get_peer_id(event.chat_id, False)
 
     user_id = db.get('channels', 'user_id', {'channel_id_input': chat_id})[0]
-    user_base = db.get('users', ['online', 'offline'], {'user_id': user_id})
-    online, offline = user_base
+    base = db.get('users', ['online', 'offline'], {'user_id': user_id})
+    online, offline = base
 
-    tz = timezone('Europe/Simferopol')
-    now_time = datetime.now(tz).time()
+    now_time = datetime.now(TZ).time()
 
     return online <= now_time <= offline
